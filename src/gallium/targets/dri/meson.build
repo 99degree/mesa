@@ -40,6 +40,11 @@ else
   libgallium_name = 'gallium-@0@'.format(meson.project_version())
 endif
 
+shared_glapi_lib = []
+libgallium_dri = []
+
+#if target_machine.system() != 'android'
+if false
 libgallium_dri = shared_library(
   libgallium_name,
   files('dri_target.c'),
@@ -67,6 +72,75 @@ libgallium_dri = shared_library(
   install : true,
   name_suffix : libname_suffix,
 )
+
+else
+
+libgallium_dri = static_library(
+  libgallium_name,
+  files('dri_target.c'),
+  include_directories : [
+    inc_include, inc_src, inc_mapi, inc_mesa,
+    inc_gallium, inc_gallium_aux, inc_util,
+    inc_gallium_drivers, inc_gallium_winsys,
+    include_directories('../../frontends/dri'),
+  ],
+  gnu_symbol_visibility : 'hidden',
+  pic : true,
+  link_args : [
+    ld_args_build_id,
+    ld_args_gc_sections,
+    gallium_dri_ld_args
+  ],
+  link_depends : gallium_dri_link_depends,
+  link_with : [
+    libmesa,
+    libgalliumvl,
+    libgallium,
+    libpipe_loader_static,
+    libws_null,
+    libwsw,
+    libswdri,
+    libswkmsdri,
+    gallium_dri_link_with
+  ],
+  link_whole : [
+    libdri,
+    gallium_dri_link_whole,
+    libglapi
+  ],
+  dependencies : [
+    dep_libdrm,
+    dep_llvm,
+    dep_thread,
+    idep_xmlconfig,
+    idep_mesautil,
+    driver_swrast,
+    driver_r300,
+    driver_r600,
+    driver_radeonsi,
+    driver_nouveau,
+    driver_kmsro,
+    driver_v3d,
+    driver_vc4,
+    driver_freedreno,
+    driver_etnaviv,
+    driver_tegra,
+    driver_i915,
+    driver_svga,
+    driver_virgl,
+    driver_panfrost,
+    driver_iris,
+    driver_lima,
+    driver_zink,
+    driver_d3d12,
+    driver_asahi,
+    driver_crocus
+  ],
+  install : true,
+  name_suffix : 'a'
+)
+
+endif
 
 shared_glapi_lib = libgallium_dri
 
