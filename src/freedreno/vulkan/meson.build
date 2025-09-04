@@ -150,7 +150,7 @@ tu_cpp_args += cpp.get_supported_arguments([
 ])
 
 libvulkan_freedreno = shared_library(
-  'vulkan_freedreno',
+  'vulkan.freedreno',
   [libtu_files, tu_entrypoints, tu_tracepoints, freedreno_xml_header_files, sha1_h, u_format_pack_h, bvh_spv],
   include_directories : libtu_includes,
   link_with : [
