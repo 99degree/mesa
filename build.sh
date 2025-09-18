@@ -1,8 +1,8 @@
-rm /tmp/mesa/lib/*.a
-rm /tmp/mesa/lib/*.so
-find -name "*.so" -exec rm {} \;
-find -name "*.a" -exec rm {} \;
-find -name "libgallium_dri.*" -exec rm -r {} \;
+#rm /tmp/mesa/lib/*.a
+#rm /tmp/mesa/lib/*.so
+#find -name "*.so" -exec rm {} \;
+#find -name "*.a" -exec rm {} \;
+#find -name "libgallium_dri.*" -exec rm -r {} \;
 
 
 # platform_sdk >= 30 enable gralloc4
@@ -12,7 +12,7 @@ find -name "libgallium_dri.*" -exec rm -r {} \;
             --prefix=/tmp/mesa \
             --cross-file "../build-crossfile" \
             -Dplatforms=android \
-            -Dplatform-sdk-version=35 \
+            -Dplatform-sdk-version=34 \
             -Dandroid-stub=true \
             -Dandroid-libbacktrace=disabled \
             -Dandroid-strict=true \
@@ -30,7 +30,7 @@ find -name "libgallium_dri.*" -exec rm -r {} \;
             -Dgallium-drivers=freedreno \
             -Dfreedreno-kmds=kgsl \
 	    -Dallow-fallback-for=libdrm \
-            -Dbuildtype=release \
+            -Dbuildtype=debug \
             --force-fallback-for=libdrm,libxml2 \
             -Dlibdrm:freedreno-kgsl=true \
             -Dlibdrm:freedreno=enabled \
