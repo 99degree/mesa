@@ -50,6 +50,7 @@ class Extension:
         return ext
 
     def c_android_condition(self):
+        return 'true'
         # if it's an EXT or vendor extension, it's allowed
         if not self.name.startswith(ANDROID_EXTENSION_WHITELIST_PREFIXES):
             return 'true'
