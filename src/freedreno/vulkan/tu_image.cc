@@ -916,16 +916,38 @@ tu_BindImageMemory2(VkDevice _device,
 
       if (!mem) {
 #if DETECT_OS_ANDROID
-         /* TODO handle VkNativeBufferANDROID */
-         unreachable("VkBindImageMemoryInfo with no memory");
+         /* Swapchain binds on Android arrive already bound: no-op. */
+         const VkBindImageMemorySwapchainInfoKHR *swapchain_info =
+            vk_find_struct_const(pBindInfos[i].pNext,
+                                 BIND_IMAGE_MEMORY_SWAPCHAIN_INFO_KHR);
+         if (swapchain_info && swapchain_info->swapchain != VK_NULL_HANDLE) {
+            continue;
+         }
+
+         if (vk_image_is_android_native_buffer(&image->vk)) {
+            /* ANB: already imported, bind is a no-op */
+            if (!image->bo)
+               return VK_ERROR_INVALID_EXTERNAL_HANDLE;
+            if (!image->iova) {
+               image->bo_offset = 0;
+               image->iova = image->bo->iova;
+            }
+            continue;
+         }
+
+         if (vk_image_is_android_hardware_buffer(&image->vk)) {
+            /* AHB must always come with a valid imported VkDeviceMemory. */
+            return VK_ERROR_INVALID_EXTERNAL_HANDLE;
+         }
 #else
          const VkBindImageMemorySwapchainInfoKHR *swapchain_info =
             vk_find_struct_const(pBindInfos[i].pNext,
                                  BIND_IMAGE_MEMORY_SWAPCHAIN_INFO_KHR);
          assert(swapchain_info &&
                 swapchain_info->swapchain != VK_NULL_HANDLE);
-         mem = tu_device_memory_from_handle(wsi_common_get_memory(
-            swapchain_info->swapchain, swapchain_info->imageIndex));
+         mem = tu_device_memory_from_handle(
+            wsi_common_get_memory(swapchain_info->swapchain,
+                                  swapchain_info->imageIndex));
          /* memoryOffset is ignored when VkBindImageMemorySwapchainInfoKHR is
           * present, so we follow common wsi to set the offset to 0 here.
           */
@@ -940,17 +962,28 @@ tu_BindImageMemory2(VkDevice _device,
 
       assert(mem);
       VkResult result;
+
       if (vk_image_is_android_hardware_buffer(&image->vk)) {
          VkImageDrmFormatModifierExplicitCreateInfoEXT eci;
          VkSubresourceLayout a_plane_layouts[TU_MAX_PLANE_COUNT];
-         result =
-            vk_android_get_ahb_layout(mem->vk.ahardware_buffer, &eci,
-                                      a_plane_layouts, TU_MAX_PLANE_COUNT);
+
+         result = vk_android_get_ahb_layout(mem->vk.ahardware_buffer,
+                                            &eci,
+                                            a_plane_layouts,
+                                            TU_MAX_PLANE_COUNT);
          if (result != VK_SUCCESS) {
             if (status)
                *status->pResult = result;
             return result;
          }
+
+         /* AHB binding must be at offset 0. */
+         if (pBindInfos[i].memoryOffset != 0) {
+            if (status)
+               *status->pResult = VK_ERROR_INVALID_OPAQUE_CAPTURE_ADDRESS;
+            return VK_ERROR_INVALID_OPAQUE_CAPTURE_ADDRESS;
+         }
+         offset = 0;
 
          result = TU_CALLX(device, tu_image_update_layout)(
             device, image, eci.drmFormatModifier, a_plane_layouts);
@@ -960,6 +993,7 @@ tu_BindImageMemory2(VkDevice _device,
             return result;
          }
       }
+
       image->bo = mem->bo;
       image->bo_offset = offset;
       image->iova = mem->bo->iova + offset;
@@ -974,11 +1008,11 @@ tu_BindImageMemory2(VkDevice _device,
                return result;
             }
          }
-
          image->map = (char *) mem->bo->map + offset;
       } else {
          image->map = NULL;
       }
+
 #ifdef HAVE_PERFETTO
       tu_perfetto_log_bind_image(device, image);
 #endif
