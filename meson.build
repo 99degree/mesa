@@ -880,18 +880,18 @@ endif
 if with_platform_android
   dep_android_ui = null_dep
   dep_android_mapper4 = null_dep
-  if not with_android_stub
+  if with_android_stub
     dep_android = [
-      dependency('cutils'),
-      dependency('hardware'),
-      dependency('log'),
-      dependency('sync'),
+      dependency('cutils', required : false),
+      dependency('hardware', required : false),
+      dependency('log', required : false),
+      dependency('sync', required : false),
     ]
     if with_libbacktrace
       dep_android += dependency('backtrace')
     endif
     if get_option('platform-sdk-version') >= 26
-      dep_android += dependency('nativewindow')
+      dep_android += dependency('nativewindow', required : false)
     endif
     if get_option('platform-sdk-version') >= 30
       dep_android_mapper4 = dependency('android.hardware.graphics.mapper', version : '>= 4.0', required : false)
