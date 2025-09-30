@@ -15,7 +15,6 @@
             -Dplatform-sdk-version=34 \
             -Dandroid-stub=true \
             -Dandroid-libbacktrace=disabled \
-            -Dandroid-strict=true \
             -Dxlib-lease=disabled \
             -Degl=true \
 	    -Degl-native-platform=android \
@@ -28,13 +27,15 @@
             -Dvulkan-drivers=freedreno \
             -Dtools=drm-shim \
             -Dgallium-drivers=freedreno \
-            -Dfreedreno-kmds=kgsl \
+            -Dfreedreno-kmds=kgsl,msm \
 	    -Dallow-fallback-for=libdrm \
             -Dbuildtype=debug \
             --force-fallback-for=libdrm,libxml2 \
             -Dlibdrm:freedreno-kgsl=true \
             -Dlibdrm:freedreno=enabled \
             -Dlibdrm:default_library=static \
+	    -Dlibdrm:tests=true
 
+#            -Dandroid-strict=false \
 #	meson configure build-android/ 
           ninja -C "build-android" install
