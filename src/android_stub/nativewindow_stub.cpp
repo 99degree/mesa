@@ -107,4 +107,21 @@ ANativeWindow_setSharedBufferMode(ANativeWindow *window,
 {
    return 0;
 }
+
+native_handle_t* native_handle_create(int numFds, int numInts) {
+	return 0;
+}
+
+native_handle_t* native_handle_clone(const native_handle_t* handle) {
+    return (native_handle_t*)handle;
+}
+
+int native_handle_close(const native_handle_t* handle) {
+    // Stub: pretend to close file descriptors
+    return 0;
+}
+
+int native_handle_delete(native_handle_t* handle) {
+    return 0;
+}
 }

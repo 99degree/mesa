@@ -29,4 +29,38 @@ atrace_get_enabled_tags()
 {
    return ATRACE_TAG_NOT_READY;
 }
+
+// android_stub/libnativehandle_stub.c
+// Stubs for native_handle_* helpers
+
+struct native_handle;
+
+struct native_handle* native_handle_create(int numFds, int numInts) {
+    (void)numFds; (void)numInts;
+    return 0; // NULL
+}
+
+struct native_handle* native_handle_clone(const struct native_handle* handle) {
+    (void)handle;
+    return 0; // NULL
+}
+
+int native_handle_close(const struct native_handle* handle) {
+    (void)handle;
+    return 0; // success
+}
+
+int native_handle_delete(struct native_handle* handle) {
+    (void)handle;
+    return 0; // success
+}
+
+int native_handle_init(void*, int, int) {
+ return 0;
+}
+
+}
+extern "C" {
+int uevent_kernel_multicast_recv(int, void*, size_t, bool) { return -1; }
+int uevent_open_socket(int, bool) { return -1; }
 }
